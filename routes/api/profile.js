@@ -15,7 +15,7 @@ router.get("/me", auth, async (req, res) => {
       return res.status(400).json({ mssg: "No user Profile" });
     }
   } catch (err) {
-    return res.status(500).send("Server Error 1");
+    return res.status(500).send("Server Error");
   }
 });
 
@@ -77,13 +77,12 @@ router.post(
         );
         return res.json(profile);
       }
-      console.log('NO profile') 
       profile = new Profile(profileFields);
       await profile.save();
       res.json(profile);
     } catch (err) {
         console.log(err)
-      res.status(500).send("Server Error 2");
+      res.status(500).send("Server Error");
     }
   }
 );
@@ -91,11 +90,22 @@ router.post(
 
 router.get("/", async (req, res) => {
   try {
-    const profiles = await Profile.find().populate("user", ["name", "avatar"]);
+    const profiles = await Profile.find().populate('user', ['name', 'avatar']);
     res.json(profiles);
   } catch (err) {
-    console.log(err.message);
-    res.status(500).send("Server Error 3");
+    res.status(500).send("Server Error");
+  }
+});
+
+//Specific User from id
+router.get("/user/:user_id", async (req, res) => {
+  try {
+    const profile = await Profile.findOne({user:req.params.user_id}).populate('user', ['name', 'avatar']);
+    if(!profile)
+     return res.status(400).json({mssg:"No Profile Found"});
+    res.json(profile);
+  } catch (err) {
+    res.status(500).send("No Profile Found");
   }
 });
 
