@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../../middleware/auth");
 const User = require("../../models/Users");
+const config = require('config');
+const request = require('request');
 // const check=require('express-validator/check');
 const Profile = require("../../models/Profile");
 const { check, validationResult } = require("express-validator");
@@ -250,6 +252,25 @@ router.delete('/education/:edu_id',auth,async (req,res)=>{
   }
 });
 
-
+//Get Github Repos
+router.get('/github/:username',(req,res)=>{
+  try {
+    const options = {
+      uri:`https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created: asc &client_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`,
+      method : 'GET',
+      headers : {'user-agent':'node.js'}
+    };
+    request(options,(errors,response,body)=>{
+      if(errors) console.log(errors);
+      if(response.statusCode !== 200){
+        return res.status(404).json({msg:'No Username Found'});
+      }
+      res.json(JSON.parse(body));
+    })
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Server Error')
+  }
+})
 
 module.exports = router;
